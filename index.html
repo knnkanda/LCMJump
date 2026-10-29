@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ぴょんぴょん最小公倍数ゲーム</title>
+  <style>
+    :root { --ink:#26304a; --muted:#6f7890; --cream:#fffaf0; --pink:#ff7aa8; --blue:#63b8ff; --mint:#74d8bd; --yellow:#ffd66e; --line:#e8e4dc; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); font-family: ui-rounded, "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif; background: radial-gradient(circle at 15% 10%, #fff 0 8%, transparent 25%), linear-gradient(135deg,#fff6ea,#eef8ff 58%,#f4efff); min-height:100vh; }
+    .wrap { max-width:1100px; margin:auto; padding:28px 18px 42px; }
+    header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:20px; }
+    .eyebrow { color:#ed6c9b; font-weight:800; letter-spacing:.08em; font-size:.82rem; }
+    h1 { font-size:clamp(2rem,5vw,3.8rem); line-height:1; margin:6px 0 10px; letter-spacing:-.05em; }
+    .lead { color:var(--muted); font-weight:700; margin:0; }
+    .badge { background:#fff; border:1px solid var(--line); border-radius:18px; padding:12px 15px; box-shadow:0 8px 24px #c8c3bb35; text-align:center; min-width:120px; }
+    .badge strong { display:block; font-size:1.8rem; color:#f06a9b; }
+    .grid { display:grid; grid-template-columns:1.45fr .8fr; gap:18px; }
+    .card { background:#fffdf9db; border:1px solid #fff; border-radius:28px; box-shadow:0 18px 42px #76674b17; padding:22px; backdrop-filter:blur(8px); }
+    .game-card { overflow:hidden; }
+    .controls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:20px; }
+    button, input { font:inherit; }
+    button { border:0; border-radius:14px; padding:11px 15px; font-weight:800; color:var(--ink); cursor:pointer; transition:.18s transform,.18s box-shadow; }
+    button:hover { transform:translateY(-2px); box-shadow:0 8px 14px #35405618; }
+    button:active { transform:translateY(0); }
+    .primary { background:var(--pink); color:#fff; }
+    .secondary { background:#eef6ff; color:#3779b5; }
+    .ghost { background:#f7f4ef; }
+    .toggle { background:#fff; border:1px solid var(--line); }
+    .numbers { display:flex; gap:10px; align-items:center; margin-left:auto; color:var(--muted); font-size:.9rem; }
+    input { width:60px; border:2px solid #e8e4dc; border-radius:12px; padding:8px; text-align:center; font-weight:800; color:var(--ink); background:#fff; }
+    .stage { background:linear-gradient(180deg,#eefdff,#fff8eb); border-radius:22px; padding:20px 14px 18px; position:relative; }
+    .message { text-align:center; font-weight:900; font-size:1.15rem; min-height:30px; color:#3d4862; }
+    .track { overflow-x:auto; padding:36px 4px 10px; scrollbar-color:#ffc4d5 transparent; }
+    .lane { min-width:650px; position:relative; height:78px; margin-bottom:12px; }
+    .lane-label { position:absolute; top:-30px; left:0; font-weight:900; }
+    .lane-label span { padding:6px 10px; border-radius:9px; color:white; font-size:.82rem; }
+    .rabbit span { background:var(--pink); }.frog span { background:var(--blue); }
+    .rail { position:absolute; left:42px; right:18px; top:38px; height:5px; background:#cbd2dc; border-radius:9px; }
+    .rail:after { content:""; position:absolute; left:0; right:0; top:-7px; height:18px; background:repeating-linear-gradient(90deg,transparent 0 39px,#aeb8c8 40px 42px); opacity:.7; }
+    .marker { position:absolute; top:20px; width:38px; height:38px; display:grid; place-items:center; font-size:1.7rem; transition:left .48s cubic-bezier(.2,.8,.2,1); z-index:2; }
+    .marker.jumping { animation:jump .48s ease; }
+    @keyframes jump { 50% { transform:translateY(-26px) rotate(-8deg); } }
+    .ticks { min-width:650px; margin-left:42px; display:flex; justify-content:space-between; color:#8a91a3; font-weight:800; font-size:.78rem; }
+    .goal { margin-top:14px; padding:13px 16px; border-radius:16px; background:#fff2bd; color:#745a1c; font-weight:800; text-align:center; }
+    .side h2 { margin-top:0; font-size:1.25rem; }
+    .explain { background:#f6f0ff; border-radius:18px; padding:15px; line-height:1.7; font-weight:700; }
+    .list { padding-left:1.2em; line-height:1.9; color:#58627a; font-weight:700; }
+    .success { background:#e6fff3; color:#227357; display:none; border-radius:16px; padding:13px; font-weight:900; text-align:center; margin-top:12px; }
+    .success.show { display:block; animation:pop .35s ease; }
+    @keyframes pop { from { transform:scale(.9); opacity:0; } }
+    .settings { margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; }
+    .tip { margin-top:16px; color:#8a91a3; font-size:.85rem; font-weight:700; }
+    @media (max-width:760px) { header{display:block}.badge{display:inline-block;margin-top:14px}.grid{grid-template-columns:1fr}.numbers{margin-left:0;width:100%}.card{padding:16px;border-radius:22px} }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div><div class="eyebrow">MATH ADVENTURE / 01</div><h1>ぴょんぴょん<br>最小公倍数ゲーム</h1><p class="lead">ウサギとカエルを、同じ場所へジャンプさせよう！</p></div>
+      <div class="badge">めざす場所<strong id="targetBadge">12</strong></div>
+    </header>
+    <section class="grid">
+      <div class="card game-card">
+        <div class="controls">
+          <button class="primary" id="jumpBtn">▶ ジャンプ！</button>
+          <button class="secondary" id="stepBtn">1ステップ進む</button>
+          <button class="ghost" id="resetBtn">↺ リセット</button>
+          <div class="numbers"><label>ウサギ <input id="rabbitInput" type="number" min="1" max="20" value="4"></label><label>カエル <input id="frogInput" type="number" min="1" max="20" value="6"></label></div>
+        </div>
+        <div class="stage">
+          <div class="message" id="message">0からスタート！ まずはジャンプしてみよう。</div>
+          <div class="track">
+            <div class="lane rabbit"><div class="lane-label"><span>🐰 ウサギ</span></div><div class="rail"></div><div class="marker" id="rabbitMarker">🐰</div></div>
+            <div class="lane frog"><div class="lane-label"><span>🐸 カエル</span></div><div class="rail"></div><div class="marker" id="frogMarker">🐸</div></div>
+            <div class="ticks" id="ticks"></div>
+          </div>
+          <div class="goal" id="goalText">4の倍数と6の倍数が、はじめて重なる場所は12！</div>
+          <div class="success" id="success">🎉 せいこう！ 2ひきとも12に到着しました！</div>
+        </div>
+        <div class="settings"><button class="toggle" id="motionBtn">✨ 動き：オン</button><button class="toggle" id="soundBtn">🔊 効果音：オン</button></div>
+        <p class="tip">数字を変えると、めざす場所も自動で変わります。横に動かせば大きな数も見られるよ。</p>
+      </div>
+      <aside class="card side"><h2>💡 なぜ12なの？</h2><div class="explain" id="explanation">4の倍数は <b>4, 8, 12</b>。<br>6の倍数は <b>6, 12</b>。<br><br>はじめて同じになるのが <b>12</b>だから、12は4と6の<strong>最小公倍数</strong>です。</div><h2 style="margin-top:22px">あそび方</h2><ol class="list"><li>「ジャンプ！」を押す</li><li>同じ地点に近づく様子を見る</li><li>2ひきが重なったらクリア！</li></ol></aside>
+    </section>
+  </main>
+  <script>
+    const state = { rabbit: 0, frog: 0, sound: true, motion: true };
+    const $ = (id) => document.getElementById(id);
+    const rabbitInput = $('rabbitInput'), frogInput = $('frogInput');
+    const gcd = (a,b) => b ? gcd(b, a % b) : a;
+    const lcm = (a,b) => Math.abs(a*b) / gcd(a,b);
+    function values() { return { rabbit: Math.max(1, Number(rabbitInput.value) || 1), frog: Math.max(1, Number(frogInput.value) || 1) }; }
+    function beep() { if (!state.sound) return; try { const audio = new (window.AudioContext || window.webkitAudioContext)(); const osc=audio.createOscillator(), gain=audio.createGain(); osc.frequency.value=520; gain.gain.value=.04; osc.connect(gain); gain.connect(audio.destination); osc.start(); osc.stop(audio.currentTime+.09); } catch {} }
+    function render() {
+      const v=values(), target=lcm(v.rabbit,v.frog), scale=Math.max(target, 12);
+      $('targetBadge').textContent=target; $('goalText').textContent=`${v.rabbit}の倍数と${v.frog}の倍数が、はじめて重なる場所は${target}！`;
+      const hits=(n)=>Array.from({length:Math.min(5,Math.ceil(target/n))},(_,i)=>n*(i+1)).filter(x=>x<=target).join('、');
+      $('explanation').innerHTML=`${v.rabbit}の倍数は <b>${hits(v.rabbit)}</b>。<br>${v.frog}の倍数は <b>${hits(v.frog)}</b>。<br><br>はじめて同じになるのが <b>${target}</b>だから、${target}は${v.rabbit}と${v.frog}の<strong>最小公倍数</strong>です。`;
+      $('ticks').innerHTML=Array.from({length:Math.min(13,scale+1)},(_,i)=>`<span>${i}</span>`).join('');
+      const pos=(n)=>`calc(42px + ${(n/scale)*100}% - ${(n/scale)*42}px)`;
+      $('rabbitMarker').style.left=pos(state.rabbit); $('frogMarker').style.left=pos(state.frog);
+      if (state.rabbit===target && state.frog===target) { $('message').textContent='ぴったり同じ！'; $('success').classList.add('show'); } else { $('success').classList.remove('show'); }
+    }
+    function jumpOne() { const v=values(), target=lcm(v.rabbit,v.frog); if(state.rabbit<target) state.rabbit=Math.min(target,state.rabbit+v.rabbit); if(state.frog<target) state.frog=Math.min(target,state.frog+v.frog); ['rabbitMarker','frogMarker'].forEach(id=>{const el=$(id); if(state.motion){el.classList.remove('jumping'); void el.offsetWidth; el.classList.add('jumping');}}); beep(); $('message').textContent=state.rabbit===target&&state.frog===target?'🎉 すごい！ ふたりとも到着！':`${state.rabbit} と ${state.frog} に着いたよ。`; render(); }
+    $('jumpBtn').onclick=jumpOne; $('stepBtn').onclick=jumpOne; $('resetBtn').onclick=()=>{state.rabbit=0;state.frog=0;$('message').textContent='0からスタート！ まずはジャンプしてみよう。';render();};
+    [rabbitInput,frogInput].forEach(input=>input.onchange=()=>{state.rabbit=0;state.frog=0;$('message').textContent='数字を変えたね！ 0からスタート。';render();});
+    $('motionBtn').onclick=()=>{state.motion=!state.motion;$('motionBtn').textContent=`✨ 動き：${state.motion?'オン':'オフ'}`;};
+    $('soundBtn').onclick=()=>{state.sound=!state.sound;$('soundBtn').textContent=`${state.sound?'🔊':'🔇'} 効果音：${state.sound?'オン':'オフ'}`;};
+    render();
+  </script>
+</body>
+</html>
